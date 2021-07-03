@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Threading;
 using WindowsSensorAgent;
 
-namespace Get_CPU_Temp5
+namespace WindowsSensorAgent
 {
     class Program
     {
