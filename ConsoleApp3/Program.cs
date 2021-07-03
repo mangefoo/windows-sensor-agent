@@ -6,6 +6,7 @@ using System.Net.Http;
 using OpenHardwareMonitor.Hardware;
 using System.Text.Json;
 using System.IO.MemoryMappedFiles;
+using System.Net;
 
 namespace Get_CPU_Temp5
 {
@@ -16,7 +17,8 @@ namespace Get_CPU_Temp5
         public Dictionary<String, String> sensors { get; set; }
     }
 
-    class FPSProvider {
+    class FPSProvider
+    {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
         [System.Runtime.InteropServices.DllImport("user32.dll")]
@@ -68,9 +70,21 @@ namespace Get_CPU_Temp5
         }
     }
 
-    class Program
+    class SensorProvider
     {
-        static HttpClient client = new HttpClient();
+        private Computer computer;
+        public SensorProvider()
+        {
+            computer = new Computer();
+            computer.Open();
+            computer.CPUEnabled = true;
+            computer.GPUEnabled = true;
+            computer.MainboardEnabled = true;
+            computer.RAMEnabled = true;
+            computer.FanControllerEnabled = true;
+            computer.HDDEnabled = true;
+            // XXX - remember to close Computer()
+        }
 
         public class UpdateVisitor : IVisitor
         {
@@ -86,44 +100,20 @@ namespace Get_CPU_Temp5
             public void VisitSensor(ISensor sensor) { }
             public void VisitParameter(IParameter parameter) { }
         }
-        static void GetSystemInfo()
+        public Dictionary<String, String> GetSensorValues()
         {
             UpdateVisitor updateVisitor = new UpdateVisitor();
-            Computer computer = new Computer();
-            computer.Open();
-            computer.CPUEnabled = true;
-            computer.GPUEnabled = true;
-            computer.MainboardEnabled = true;
-            computer.RAMEnabled = true;
-            computer.FanControllerEnabled = true;
-            computer.HDDEnabled = true;
             computer.Accept(updateVisitor);
 
             Dictionary<String, String> sensorValues = new Dictionary<string, string>();
 
-            /*
-            sensor_values.insert("cpu_utilization".to_string(), rng.gen_range(0..100).to_string());
-            sensor_values.insert("cpu_die_temp".to_string(), rng.gen_range(29..100).to_string());
-            sensor_values.insert("cpu_package_temp".to_string(), rng.gen_range(29..100).to_string());
-            sensor_values.insert("cpu_power".to_string(), rng.gen_range(19.0..250.0).to_string());
-            sensor_values.insert("cpu_voltage".to_string(), rng.gen_range(0.0..2.5).to_string());
-            sensor_values.insert("cpu_frequency".to_string(), rng.gen_range(-1..4900).to_string());
-            */
             sensorValues.Add("cpu_voltage", "0");
-/*            sensorValues.Add("gpu_utilization", "50");
-            sensorValues.Add("gpu_die_temp", "50");
-            sensorValues.Add("gpu_package_temp", "60");
-            sensorValues.Add("gpu_power", "100");
-            sensorValues.Add("gpu_voltage", "1.5");
-            sensorValues.Add("gpu_frequency", "2000");*/
 
             for (int i = 0; i < computer.Hardware.Length; i++)
             {
-                //if (computer.Hardware[i].HardwareType == HardwareType.CPU || computer.Hardware[i].HardwareType == HardwareType.GpuAti || computer.Hardware[i].HardwareType == HardwareType.Mainboard || computer.Hardware[i].HardwareType == HardwareType.RAM)
                 {
                     for (int j = 0; j < computer.Hardware[i].Sensors.Length; j++)
                     {
-                        //if (computer.Hardware[i].Sensors[j].SensorType == SensorType.Temperature)
                         ISensor sensor = computer.Hardware[i].Sensors[j];
                         if (sensor.SensorType == SensorType.Load && sensor.Name == "CPU Total")
                         {
@@ -172,46 +162,78 @@ namespace Get_CPU_Temp5
                             sensorValues.Add("gpu_frequency", sensor.Value.ToString());
                         }
 
-                        Console.WriteLine(sensor.SensorType + " -- " + sensor.Name + ":" + sensor.Value.ToString() + "\r");
-                        //Console.WriteLine("Hardware: " + sensor.Hardware.Name);
+                        //Console.WriteLine(sensor.SensorType + " -- " + sensor.Name + ":" + sensor.Value.ToString() + "\r");
                     }
                 }
             }
-            computer.Close();
 
-            SensorReport report = new SensorReport
-            {
-                reporter = "windows-agent",
-                topic = "sensors",
-                sensors = sensorValues
-            };
-
-            string jsonString = JsonSerializer.Serialize(report);
-
-            Console.WriteLine("Sending request: " + jsonString);
-
-            //client.BaseAddress = new Uri("http://sensor-relay.int.mindphaser.se/");
-
-            StringContent content = new StringContent(jsonString);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "application/json");
-
-            HttpResponseMessage res = client.PostAsync("http://sensor-relay.int.mindphaser.se/publish", content).Result;
-            Console.WriteLine("Got result " + res.StatusCode);
+            return sensorValues;
         }
-        static void Main(string[] args)
+
+        class SensorReporter
         {
-            //            while (true)
-            //            {
-            CultureInfo cultureInfo = CultureInfo.GetCultureInfo("en-US");
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            FPSProvider fpsProvider = new FPSProvider();
-            while (true)
+            private String relayHost;
+            private HttpClient httpClient;
+
+            public SensorReporter(String relayHost)
             {
-                GetSystemInfo();
-                Thread.Sleep(1000);
+                this.relayHost = relayHost;
+                this.httpClient = new HttpClient();
             }
-            Console.ReadLine();
-//            }
+
+            public Boolean report(Dictionary<String, String> sensorValues)
+            {
+                SensorReport report = new SensorReport
+                {
+                    reporter = "windows-agent",
+                    topic = "sensors",
+                    sensors = sensorValues
+                };
+
+                string jsonString = JsonSerializer.Serialize(report);
+
+                Console.WriteLine("Sending report: " + jsonString);
+
+                StringContent content = new StringContent(jsonString);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                HttpResponseMessage res = httpClient.PostAsync(getRelayUrl("/publish"), content).Result;
+                
+                Console.WriteLine("Got result " + res.StatusCode);
+
+                return res.StatusCode == HttpStatusCode.OK;
+            }
+
+            private String getRelayUrl(String path)
+            {
+                return String.Format("http://{0}{1}", relayHost, path);
+            }
+        }
+
+        class Program
+        {
+            
+
+
+            static void Main(string[] args)
+            {
+                CultureInfo cultureInfo = CultureInfo.GetCultureInfo("en-US");
+                Thread.CurrentThread.CurrentCulture = cultureInfo;
+                FPSProvider fpsProvider = new FPSProvider();
+                SensorProvider sensorProvider = new SensorProvider();
+                SensorReporter sensorReporter = new SensorReporter("sensor-relay.int.mindphaser.se");
+                while (true)
+                {
+                    Dictionary<String, String> sensorValues = sensorProvider.GetSensorValues();
+                    int fps = fpsProvider.GetFPS();
+                    sensorValues.Add("gpu_fps", fps.ToString());
+
+                    sensorReporter.report(sensorValues);
+
+                    Thread.Sleep(1000);
+                }
+                Console.ReadLine();
+            }
         }
     }
 }
