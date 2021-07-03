@@ -10,10 +10,11 @@ namespace Get_CPU_Temp5
     {
         static void Main(string[] args)
         {
-            CultureInfo cultureInfo = CultureInfo.GetCultureInfo("en-US");
+            CultureInfo cultureInfo = CultureInfo.GetCultureInfo("en-US"); // To get the correct formatting when serializing to JSON
             Thread.CurrentThread.CurrentCulture = cultureInfo;
+
             SensorProvider sensorProvider = new SensorProvider();
-            SensorReporter sensorReporter = new SensorReporter("sensor-relay.int.mindphaser.se");
+            SensorReporter sensorReporter = new SensorReporter("sensor-relay.int.mindphaser.se", "windows-sensor-agent", "sensors");
 
             while (true)
             {
@@ -26,5 +27,4 @@ namespace Get_CPU_Temp5
             Console.ReadLine();
         }
     }
-}
 }

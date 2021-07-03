@@ -15,11 +15,15 @@ namespace WindowsSensorAgent
     public class SensorReporter
     {
         private String relayHost;
+        private String reporterId;
+        private String topic;
         private HttpClient httpClient;
 
-        public SensorReporter(String relayHost)
+        public SensorReporter(String relayHost, String reporterId, String topic)
         {
             this.relayHost = relayHost;
+            this.reporterId = reporterId;
+            this.topic = topic;
             this.httpClient = new HttpClient();
         }
 
@@ -27,8 +31,8 @@ namespace WindowsSensorAgent
         {
             SensorReport report = new SensorReport
             {
-                reporter = "windows-agent",
-                topic = "sensors",
+                reporter = reporterId,
+                topic = topic,
                 sensors = sensorValues
             };
 
