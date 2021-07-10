@@ -45,7 +45,7 @@ namespace WindowsSensorAgent
 
             HttpResponseMessage res = httpClient.PostAsync(getRelayUrl("/publish"), content).Result;
 
-            Console.WriteLine("Got result " + res.StatusCode);
+            //Console.WriteLine("Got result " + res.StatusCode);
 
             return res.StatusCode == HttpStatusCode.OK;
         }

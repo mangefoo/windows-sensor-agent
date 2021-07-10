@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsSensorAgent", "ConsoleApp3\WindowsSensorAgent.csproj", "{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsSensorAgentService", "WindowsSensorAgentService\WindowsSensorAgentService.csproj", "{FE940663-62C6-4783-82E6-E4C1ED5BBE31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsSensorAgent", "WindowsSensorAgent\WindowsSensorAgent.csproj", "{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsSensorAgentForm", "WindowsSensorAgentForm\WindowsSensorAgentForm.csproj", "{6306D6B6-C017-4AC2-BA14-1EFB2FF5A95F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE940663-62C6-4783-82E6-E4C1ED5BBE31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE940663-62C6-4783-82E6-E4C1ED5BBE31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE940663-62C6-4783-82E6-E4C1ED5BBE31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE940663-62C6-4783-82E6-E4C1ED5BBE31}.Release|Any CPU.Build.0 = Release|Any CPU
 		{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10B69DE5-EF4B-42DD-AF53-7DA25ABAC5A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6306D6B6-C017-4AC2-BA14-1EFB2FF5A95F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6306D6B6-C017-4AC2-BA14-1EFB2FF5A95F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6306D6B6-C017-4AC2-BA14-1EFB2FF5A95F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6306D6B6-C017-4AC2-BA14-1EFB2FF5A95F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

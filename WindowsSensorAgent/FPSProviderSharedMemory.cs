@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WindowsSensorAgent
 {
-    class FPSProvider
+    class FPSProviderSharedMemory : FPSProvider
     {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -17,10 +18,23 @@ namespace WindowsSensorAgent
         private MemoryMappedFile mmf;
         private MemoryMappedViewAccessor accessor;
 
-        public FPSProvider()
+        public FPSProviderSharedMemory(StreamWriter writer)
         {
-            mmf = MemoryMappedFile.OpenExisting("RTSSSharedMemoryV2");
-            accessor = mmf.CreateViewAccessor();
+            try
+            {
+                writer.WriteLine("Creating mmf");
+                writer.Flush();
+                mmf = MemoryMappedFile.OpenExisting("RTSSSharedMemoryV2");
+                writer.WriteLine("Creating accessor");
+                writer.Flush();
+                accessor = mmf.CreateViewAccessor();
+                writer.WriteLine("Accessor created");
+                writer.Flush();
+            } finally
+            {
+                writer.WriteLine("FPS provider is done");
+                writer.Flush();
+            }
         }
 
         public int GetFPS()
