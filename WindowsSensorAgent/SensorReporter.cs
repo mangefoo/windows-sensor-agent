@@ -38,16 +38,20 @@ namespace WindowsSensorAgent
 
             string jsonString = JsonSerializer.Serialize(report);
 
-            Console.WriteLine("Sending report: " + jsonString);
-
             StringContent content = new StringContent(jsonString);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage res = httpClient.PostAsync(getRelayUrl("/publish"), content).Result;
+            try
+            {
+                HttpResponseMessage res = httpClient.PostAsync(getRelayUrl("/publish"), content).Result;
 
-            //Console.WriteLine("Got result " + res.StatusCode);
+                return res.StatusCode == HttpStatusCode.OK;
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Failed to send sensor report: " + ex);
+            }
 
-            return res.StatusCode == HttpStatusCode.OK;
+            return false;
         }
 
         private String getRelayUrl(String path)

@@ -49,10 +49,8 @@ namespace WindowsSensorAgentForm
                 writer.WriteLine("Starting sensor publisher loop");
                 while (true)
                 {
-                    writer.WriteLine("Getting sensor values");
                     writer.Flush();
                     Dictionary<String, String> sensorValues = sensorProvider.GetSensorValues();
-                    writer.WriteLine("Publishing sensor values");
                     writer.Flush();
                     sensorReporter.report(sensorValues);
 

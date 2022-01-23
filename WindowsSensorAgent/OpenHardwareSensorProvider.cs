@@ -38,6 +38,7 @@ namespace WindowsSensorAgent
                 writer.WriteLine("Failed to create FPS provider: {0}", ex);
                 writer.Flush();
             }
+
             // XXX - remember to close Computer()
         }
 
@@ -66,7 +67,7 @@ namespace WindowsSensorAgent
 
             var sensorMap = new Dictionary<SensorType, Dictionary<string, string>>()
             {
-                { 
+                {
                     SensorType.Load, new Dictionary<string, string>() {
                         { "CPU Total", "cpu_utilization" },
                         { "GPU Core", "gpu_utilization" },
@@ -86,7 +87,7 @@ namespace WindowsSensorAgent
                         { "CPU Core #14", "cpu_core_load_14" },
                         { "CPU Core #15", "cpu_core_load_15" },
                         { "CPU Core #16", "cpu_core_load_16" }
-                    } 
+                    }
                 },
                 {
                     SensorType.Temperature, new Dictionary<string, string>()
@@ -166,20 +167,31 @@ namespace WindowsSensorAgent
 
                         if (sensorMap.ContainsKey(sensor.SensorType) && sensorMap[sensor.SensorType].ContainsKey(sensor.Name))
                         {
-                            sensorValues.Add(sensorMap[sensor.SensorType][sensor.Name], sensor.Value.ToString());
+                            if (!sensorValues.ContainsKey(sensorMap[sensor.SensorType][sensor.Name]))
+                            {
+                                sensorValues.Add(sensorMap[sensor.SensorType][sensor.Name], sensor.Value.ToString());
+                            }
                         }
 
-                        Console.WriteLine(sensor.SensorType + " -- " + sensor.Name + " - " + sensor.Identifier + ":" + sensor.Value.ToString() + "\r");
+                        // console.WriteLine(sensor.SensorType + " -- " + sensor.Name + " - " + sensor.Identifier + ":" + sensor.Value.ToString());
                     }
                 }
             }
 
             if (fpsProvider != null)
             {
-                Console.WriteLine("Getting FPS");
                 int fps = fpsProvider.GetFPS();
                 sensorValues.Add("gpu_fps", fps.ToString());
-                Console.WriteLine("Got FPS {0}", fps);
+            }
+
+            foreach (var value in HDDInfoProvider.GetHDDInfo())
+            {
+                sensorValues.Add(value.Key, value.Value);
+            }
+
+            foreach (var value in NetworkInfoProvider.GetNetworkInfo())
+            {
+                sensorValues.Add(value.Key, value.Value);
             }
 
             return sensorValues;
